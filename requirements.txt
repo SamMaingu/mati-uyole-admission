@@ -1,0 +1,302 @@
+                                                                        MINISTRY OF AGRICULTURE · MATI UYOLE
+
+                        Online Admission System
+
+                                        System Requirements & Process Document -- Draft 2.1
+
+                                                  Imeandaliwa kwa msingi wa Official Application Form 2026/2027 | September 2026
+
+1. Lengo la Mfumo
+
+Kutengeneza mfumo wa Online Admission utakaorahisisha mchakato wa kuomba admission kwa mwanafunzi na kurahisisha kazi za
+Admission Office ya chuo.
+Mfumo unaondoa utegemezi wa:
+
+        Application forms za PDF
+        Kuchapisha na kuscan forms
+        Kutuma applications kwa email/post
+        Manual checking ya taarifa
+        Manual tracking ya application
+        Mawasiliano yasiyo na status ya wazi
+Mfumo una pande mbili kuu:
+   1. Student/Applicant Portal
+   2. Institute/Admission Management Portal
+Architecture inaruhusu integrations za baadaye kama NECTA/NACTVET verification, payment APIs (GePG) na SMS services.
+
+2. Principle Kuu ya Mfumo
+
+   Simple for the student, powerful for the institute.
+
+        Student asijazwe form ndefu na taarifa zisizohitajika wakati wa kuomba.
+        Institute ipate tools za kutosha kusimamia applications, verification, selection na reporting.
+
+3. Student/Applicant Process (Flow Iliyokamilika)
+
+   Create Account  Personal Information  Academic Information
+    Application Fee (Control Number)  Programme Selection
+    Eligibility Check  Review  Submit  Track Status
+
+Uamuzi wa mchakato (umethibitishwa): Application fee inalipwa kabla ya programme selection. Hii ni sawa na mifumo mingine ya
+Tanzania (Mzumbe, OUT, UDSM) -- control number inatengenezwa mara baada ya registration/taarifa za msingi kukamilika, mwombaji
+analipa, ndipo anaendelea kuchagua programme.
+
+4. Step 1 -- Create Account
+
+Required - First Name, Middle Name (kama ipo), Last Name - Phone Number - Password / Confirm Password
+Optional - Email Address
+Baada ya registration, system inatengeneza Application Number (mfano: MATI-2026-000124).
+Phone number ni ya lazima kwa mawasiliano ya SMS. (Ongezeko: fikiria OTP/authentication code kwa first login badala ya password pekee
+-- inasaidia maeneo yenye changamoto za password reset.)
+
+5. Step 2 -- Personal Information
+
+(Imesasishwa kulingana na Official Application Form 2026/2027 -- Section C)
+Required: First/Middle/Last Name, Gender, Date of Birth, Place of Birth, Marital Status (Single/Married/Other), Citizenship
+(Tanzanian/Others -- specify), Phone Number, Region, District, City/Town, Present Address, Postal Box
+Optional: Email
+
+Passport Photo: Upload wakati wa application (coloured, jina nyuma) -- hii ni tofauti na "certificates" nzito (birth cert, academic certs),
+inahitajika mapema kwa ID na admission letter.
+
+Disability Status (ongezeko kutoka form halisi): Yes/No; ikiwa Yes, eleza. Muhimu: hii ni kwa ajili ya institute kuandaa msaada
+muafaka -- si sharti la kukubali/kukataa admission. Weka field hii kwa uangalifu (optional, na taarifa wazi kwa mwombaji kuhusu matumizi
+yake).
+
+Next of Kin (detailed zaidi kuliko draft ya awali): - Full Name, Relationship (mfano: Father), Phone Number - Present Address, Postal
+Box, City/Town - Email Address
+
+6. Step 3 -- Academic Information
+
+(Imesasishwa kulingana na Official Application Form -- Section C)
+
+        Qualification type (CSEE/Form IV, NVA Level III, Diploma/NTA, Other)
+        Index Numbers mbili (form halisi inaomba zote):
+
+                 Form IV/CSEE Index No. -- format S0000/0000/0000
+                 Index No. ya pili -- format P... (huenda ni PSLE -- thibitisha na institute maana yake hasa)
+        Division na Points za matokeo ya NECTA (mfano: Division II, points 24)
+        Year Completed, Secondary School Name, Country (kwa waliosoma nje)
+        Primary School: Jina, District, Region (hii ilikuwa haipo kwenye draft ya awali -- form halisi inaihitaji)
+
+Ongezeko muhimu -- Index Number & AVN validation: - Weka field validation kwa format za index number hapo juu - Kwa waombaji
+wenye Diploma/NTA wanaoendelea (NTA5NTA6), ongeza field ya AVN (Award Verification Number) kutoka NACTVET (mfano:
+19NA12212ME), hata kama verification bado ni manual kwa sasa - Muhimu: Kwa mujibu wa form halisi, NACTVET verification rasmi
+inafanyika BAADA ya selection, siyo wakati wa application. Kwa hiyo automatic eligibility check ya system (Sehemu ya 9) ni preliminary
+tu based on taarifa alizoingiza mwombaji mwenyewe -- siyo verified na NACTVET mpaka baada ya kuchaguliwa.
+
+Certificate upload si mandatory wakati wa initial application (certificates zinahitajika baadaye -- ona Sehemu 14).
+
+7. Step 4 -- Application Fee
+
+Fee: TZS 20,000 -- Non-refundable (kwa mwaka 2026/2027)
+
+Application Fee  Generate Control Number  Student Anapiga Malipo
+ Payment Verification  PAID
+
+Payment Status (imepanuliwa): - Unpaid - Pending - Paid - Failed - Expired (control number za GePG/mobile money zina muda wa
+kuisha -- ongezeko)
+
+Business Rule: Student hawezi kuchagua programme mpaka fee iwe PAID.
+
+Ongezeko -- Non-Tanzanian applicants: Weka fee tofauti/utaratibu tofauti kwa waombaji wa kigeni (kama UDSM: TZS kwa Tanzania,
+USD kwa foreign), kwani doc ya awali haikuwa na tofauti hii.
+
+Uamuzi unaohitajika -- Control Number (muhimu kabla ya FRD):
+
+Mchakato wa sasa (manual, form halisi) unatumia control number MOJA ya pamoja kwa waombaji wote (997400027916 kupitia
+NMB/GePG), na verification inafanyika kwa kuangalia risiti iliyowasilishwa (manual, siyo automatic per-applicant).
+
+Kwa online system, chagua moja:
+
+   1. Endelea na control number ya pamoja -- rahisi zaidi kutumia GePG setup iliyopo sasa, lakini payment verification inabaki manual
+        (Finance Officer ana-cross-check risiti/reference number dhidi ya jina la mwombaji)
+
+   2. Omba control number za kipekee kwa kila mwombaji kutoka NMB/GePG -- inaruhusu automatic verification, lakini inahitaji
+        mpangilio mpya wa kibiashara na benki/GePG kabla ya development kuanza
+
+Hii ni uamuzi wa kibiashara (business decision) na chuo, siyo teknolojia pekee -- thibitisha kabla ya kuandika FRD kwa sababu inaathiri
+database design ya Payment module.
+
+Architecture iwe tayari kwa GePG / payment API integration bila kujali chaguo litakalochukuliwa.
+
+8. Step 5 -- Programme Selection
+
+Inafunguka baada ya payment confirmation. Mfano MATI Uyole 2026/2027:
+
+Programme                                                              NTA Level
+
+Basic Technician Certificate in Agriculture Production                 4
+Technician Certificate in Agriculture Production                                                        5
+
+Ordinary Diploma in Agriculture Production                                                              6
+
+Kila programme ina: jina, NTA Level, description, entry requirements, application availability/status.
+
+9. Automatic Eligibility Check                           Entry Requirements
+
+(Requirements kamili kutoka Official Form -- Section D)  CSEE -- angalau vipasso 4 vya D, mbili kati yake ni za Sayansi
+ Programme                                               (Chemistry, Physics, Biology, Mathematics, Agriculture, Engineering
+  NTA Level 4                                            Science, Geography, Human Nutrition), na vipasso viwili vya masomo
+                                                         yasiyo ya dini. AU -- NVA Level III (au sawa) katika kozi ya kilimo, na
+  NTA Level 5                                            angalau vipasso 2 vya D kwenye CSEE (masomo yasiyo ya dini)
+
+  NTA Level 6                                            NTA Level 4 katika Agriculture Production. AU -- ACSEE yenye
+                                                         "Agriculture Science" kama principal pass, na angalau subsidiary pass
+                                                         moja nyingine
+
+                                                         NTA Level 5 katika Agriculture Production NA NTA Level 5 katika
+                                                         General Agriculture (vyeti viwili tofauti -- thibitisha uhalisia wa hili na
+                                                         institute, kwani ni sharti lisilo la kawaida)
+
+Muhimu: Eligibility check ya system ni preliminary based on taarifa alizoingiza mwombaji; NACTVET verification rasmi inafanyika baada ya
+selection (ona Sehemu 6).
+
+Matokeo: -  Eligible -- "You meet the basic requirements for this programme." -  Not Eligible -- "Based on the information provided,
+you do not meet the basic entry requirements."
+
+Note: Ni preliminary check tu; uamuzi wa mwisho unabaki kwa institute.
+
+Ongezeko: Weka njia ya appeal/re-application -- mwombaji aliyepata "Not Eligible" aweze kurekebisha taarifa (mfano typo kwenye
+grade) na kuwasilisha tena, badala ya kuishia njia panda.
+
+10. Step 6 -- Review Application
+
+Summary kabla ya submit (Personal Info, Academic Info, Fee status, Programme), na uwezo wa Edit kabla ya submission.
+
+11. Step 7 -- Submit Application
+
+Confirmation checkbox  SUBMIT APPLICATION  Status: SUBMITTED / UNDER REVIEW
+Student hawezi kubadilisha taarifa muhimu baada ya submission bila ruhusa ya institute.
+
+12. Student Dashboard
+
+Onyesha: karibu, Application No, progress checklist, Current Status, na Next Step pekee (siyo taarifa zote kwa mkupuo).
+
+13. Application Status (Full List)
+
+Draft  Payment Pending  Paid  Submitted  Under Review  Additional Information Required  Eligible/Not Eligible  Selected/Not
+Selected/Waitlisted  Admission Completed
+(Ongezeko: Waitlisted -- badala ya "Not Selected" kuwa binary pekee, kama capacity ikijaa.)
+
+14. Documents -- Baada ya Selection
+
+SELECTED  COMPLETE ADMISSION  UPLOAD REQUIRED DOCUMENTS
+
+Documents: Birth Certificate, Passport Photo, Academic Certificates, nyingine.
+Principle: Application (taarifa za kuomba) na Admission/Registration (documents baada ya kuchaguliwa) ni hatua mbili tofauti.
+Ongezeko -- Institute Fees (kuonyeshwa baada ya selection, siyo wakati wa application):
+
+Item                                              NTA 4  NTA 5                                          NTA 6
+Installment ya 1 (jumla)  610,400    610,400                                                 610,400
+Installment ya 2 (jumla)  500,000    500,000                                                 1,120,000
+Jumla ya Mwaka            1,110,400  1,110,400                                               1,730,400
+
+(Hii ni tofauti kabisa na TZS 20,000 application fee -- inaonyeshwa kwenye Admission/Registration stage tu, kama sehemu ya "Complete
+Admission" checklist.)
+
+        HESLB loan proof -- field ya kuweka uthibitisho wa mkopo (kwa wanaostahili), inawasilishwa wakati wa registration, siyo
+        application
+        Student requirements checklist (mattress, bedsheets, uniform, stationery, n.k.) -- vinaweza kuonyeshwa kama "Pre-Arrival
+        Checklist" kwenye dashboard ya mwanafunzi aliyechaguliwa, siyo sehemu ya database fields za lazima
+
+15­17. Institute/Admin Portal -- Dashboard, Programme & Requirements Management
+
+        Dashboard ya applications zote kwa status
+        Programme management: add/edit/activate, NTA level, capacity, application period/window (ongezeko: TCU-style "rounds" --
+        dirisha la kwanza, la pili)
+        Requirements zisizo hard-coded -- configurable kwa kila academic year
+
+18­19. Application Management & Review
+
+Admission Officer anaweza: search/filter (Application No, Name, Phone, Programme, Gender, Region, District, Payment status, Application
+status), review taarifa zote sehemu moja, change status, request additional info, approve/reject.
+Ongezeko -- Duplicate check: Zuia mwombaji mmoja (Index Number/phone moja) kuomba mara mbili kwa programme tofauti mwaka
+mmoja bila sababu za msingi.
+
+20. Selection Management
+
+Admin anaweka academic year, programme, capacity, selection criteria. System inasaidia kupanga applicants; final approval inabaki
+kwa authorized staff.
+
+21. Admission Letter
+
+Auto-generated: institute details, applicant name, Application No, programme, NTA level, academic year, reporting info. Baadaye: QR
+Code verification.
+
+22. SMS Notifications
+
+SMS kwa: account creation, payment confirmed, submission, status update, selection, documents required. SMS ni primary channel; email
+ni supplementary. Abstraction layer ili provider iweze kubadilishwa.
+
+23. Institute Reports
+
+Application Report (by programme, gender, region, district, eligibility, selection) na Payment Report -- exportable Excel/CSV/PDF.
+
+24. User Roles
+
+Role                                 Access
+Super Admin                          System config, users, roles, programmes, academic years
+Admission Officer                    Applications, verification, eligibility, selection workflow
+Finance Officer                      Payments, reports, reconciliation
+Approving Authority                  Final approval, selection approval
+
+Applicant                            Own application, status, notifications, documents
+
+25. Audit Log
+
+Kila action muhimu inahifadhiwa (nani, lini, alifanya nini) kwa accountability na security.
+
+26. Future Integrations
+Eneo                   Sasa                                        Baadaye
+Academic Verification  Manual/system verification ya Index Number  NECTA/NACTVET API
+Payment                Control number / mobile money manual        GePG / Approved Payment API
+                       confirmation
+SMS                    Notification service (abstraction)          SMS Provider integration
+Email                  Notification service (abstraction)          Email Provider integration
+
+27. Important Design Rules
+
+   1. Student asiulizwe taarifa isiyohitajika wakati wa hatua hiyo
+   2. Application iwe short and simple
+   3. Programme selection ifunguke baada ya application fee payment confirmation (imethibitishwa -- sawa na mifumo mingine
+
+        ya Tanzania)
+   4. Documents nyingi ziwe admission/registration stage, siyo initial application
+   5. Student aone progress na status muda wote
+   6. SMS ni primary notification channel, email ni supplementary
+   7. Admission requirements ziwe configurable
+   8. Payment, SMS, academic verification, document verification ziwe modules zinazo-integrate APIs baadaye
+   9. System iwe mobile-first
+ 10. Final admission decision ibaki kwa authorized institute officials
+
+28. MVP -- Tunachojenga Kwanza
+
+Student: Registration, Login, Dashboard, Personal/Academic Info, Payment, Programme Selection, Eligibility Check, Review, Submit,
+Status Tracking
+
+Institute: Admin login, Dashboard, Programme Management, Requirements, Application Management/Review, Payment Monitoring,
+Eligibility, Selection, Status Management, Reports, SMS
+
+Later: Document upload baada ya selection, Admission letters, QR verification, NECTA/NACTVET integration, GePG integration, Advanced
+SMS, Waitlist automation, Appeal/re-application flow
+
+29. Final System Flow
+
+Student: Create Account  Personal Info  Academic Info  Pay Fee  Programme Selection  Eligibility Check  Review  Submit 
+Track Status  Selection/Waitlist  Upload Documents  Admission/Registration
+
+Institute: Configure Academic Year  Set Application Windows  Add Programmes  Set Requirements  Receive Applications 
+Payment Monitoring  Review  Eligibility Verification  Selection  Approval  Notify Students  Admission Documents  Registration
+
+30. Core Vision
+
+   A simple digital admission workflow connecting the applicant and the institute -- from application to admission.
+
+Applicant: hatua chache, lugha rahisi, mobile-friendly, anaona status yake kila wakati.
+Institute: centralized applications, verification, payment tracking, selection, communication na reports sehemu moja.
+Hatua Inayofuata
+Draft 2.1 hii ndiyo msingi wa Functional Requirements Document (FRD) -- itakayoeleza kila page ya Student Portal na Institute Portal,
+fields zake required/optional, validations, buttons, statuses, na business rules, tayari kwa UI/UX na database design.
+
+                       MATI Uyole Online Admission System -- Requirements Document (Draft 2.1) -- Kwa matumizi ya ndani ya mradi
+
