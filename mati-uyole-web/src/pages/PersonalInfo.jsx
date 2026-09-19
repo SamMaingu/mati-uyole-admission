@@ -6,6 +6,8 @@ import { Button, Field, Notice, apiErrors } from '../components/ui'
 import { useMe } from '../lib/useMe'
 import { usePlaces } from '../lib/usePlaces'
 import { useDraft } from '../lib/useDraft'
+import { validDob } from '../lib/validate'
+import { useToast } from '../components/Toast'
 import api from '../lib/api'
 
 const INITIAL = {
@@ -26,6 +28,7 @@ const INITIAL = {
 
 export default function PersonalInfo() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { user, refresh } = useMe()
   const profile = user?.applicant_profile
   const { regions, districts, loadDistricts, loading } = usePlaces()
@@ -53,6 +56,7 @@ export default function PersonalInfo() {
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   useEffect(() => {
     if (!regions.length || !form.region) return
@@ -74,14 +78,24 @@ export default function PersonalInfo() {
   async function onSubmit(e) {
     e.preventDefault()
     setError('')
+    const fieldErrs = {}
+    if (!validDob(form.date_of_birth)) fieldErrs.date_of_birth = t('errors.dobRange')
+    setFieldErrors(fieldErrs)
+    if (Object.keys(fieldErrs).length > 0) {
+      toast.error(t('errors.dobRange'))
+      return
+    }
     setSaving(true)
     try {
       await api.put('/me/personal-info', form)
       commit()
       await refresh()
+      toast.success(t('toast.saved'))
       navigate('/apply/kin')
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -104,8 +118,17 @@ export default function PersonalInfo() {
           </select>
         </Field>
 
-        <Field label={t('personal.dob')}>
-          <input type="date" value={form.date_of_birth} onChange={set('date_of_birth')} required />
+        <Field label={t('personal.dob')} error={fieldErrors.date_of_birth}>
+          <input
+            className={fieldErrors.date_of_birth ? 'error' : ''}
+            type="date"
+            value={form.date_of_birth}
+            onChange={(e) => {
+              set('date_of_birth')(e)
+              setFieldErrors((f) => (f.date_of_birth ? { ...f, date_of_birth: undefined } : f))
+            }}
+            required
+          />
         </Field>
 
         <Field label={t('personal.placeOfBirth')}>

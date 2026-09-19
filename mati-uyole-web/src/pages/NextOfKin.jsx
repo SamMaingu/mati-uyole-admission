@@ -6,9 +6,9 @@ import { Button, Field, Notice, apiErrors } from '../components/ui'
 import { useMe } from '../lib/useMe'
 import { usePlaces } from '../lib/usePlaces'
 import { useDraft } from '../lib/useDraft'
+import { validPhone, validEmail } from '../lib/validate'
+import { useToast } from '../components/Toast'
 import api from '../lib/api'
-
-const PHONE_RE = /^0\d{9}$|^(\+?255)\d{9}$/
 
 const INITIAL = {
   full_name: '',
@@ -24,6 +24,7 @@ const INITIAL = {
 
 export default function NextOfKin() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { user, refresh } = useMe()
   const kin = user?.applicant_profile?.next_of_kin
   const { regions, districts, loadDistricts, loading } = usePlaces()
@@ -47,6 +48,7 @@ export default function NextOfKin() {
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
 
   useEffect(() => {
     if (!regions.length || !form.region) return
@@ -68,18 +70,23 @@ export default function NextOfKin() {
   async function onSubmit(e) {
     e.preventDefault()
     setError('')
-    if (!PHONE_RE.test(form.phone)) {
-      setError(t('errors.phone'))
-      return
-    }
+    const fieldErrs = {}
+    if (!form.full_name.trim()) fieldErrs.full_name = t('field.required')
+    if (!validPhone(form.phone)) fieldErrs.phone = t('errors.phone')
+    if (form.email && !validEmail(form.email)) fieldErrs.email = t('errors.email')
+    setFieldErrors(fieldErrs)
+    if (Object.keys(fieldErrs).length > 0) return
     setSaving(true)
     try {
       await api.put('/me/next-of-kin', form)
       commit()
       await refresh()
+      toast.success(t('toast.saved'))
       navigate('/apply/academic')
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -93,8 +100,16 @@ export default function NextOfKin() {
       <form className="card" onSubmit={onSubmit}>
         <Notice type="error">{error}</Notice>
 
-        <Field label={t('kin.fullName')}>
-          <input value={form.full_name} onChange={set('full_name')} required />
+        <Field label={t('kin.fullName')} error={fieldErrors.full_name}>
+          <input
+            className={fieldErrors.full_name ? 'error' : ''}
+            value={form.full_name}
+            onChange={(e) => {
+              set('full_name')(e)
+              setFieldErrors((f) => (f.full_name ? { ...f, full_name: undefined } : f))
+            }}
+            required
+          />
         </Field>
 
         <Field label={t('kin.relationship')}>
@@ -108,8 +123,17 @@ export default function NextOfKin() {
           </select>
         </Field>
 
-        <Field label={t('kin.phone')}>
-          <input value={form.phone} onChange={set('phone')} inputMode="tel" required />
+        <Field label={t('kin.phone')} error={fieldErrors.phone}>
+          <input
+            className={fieldErrors.phone ? 'error' : ''}
+            value={form.phone}
+            onChange={(e) => {
+              set('phone')(e)
+              setFieldErrors((f) => (f.phone ? { ...f, phone: undefined } : f))
+            }}
+            inputMode="tel"
+            required
+          />
         </Field>
 
         <Field label={t('kin.address')}>
@@ -150,8 +174,16 @@ export default function NextOfKin() {
           </select>
         </Field>
 
-        <Field label={t('kin.email')} optional={true}>
-          <input type="email" value={form.email} onChange={set('email')} />
+        <Field label={t('kin.email')} optional={true} error={fieldErrors.email}>
+          <input
+            className={fieldErrors.email ? 'error' : ''}
+            type="email"
+            value={form.email}
+            onChange={(e) => {
+              set('email')(e)
+              setFieldErrors((f) => (f.email ? { ...f, email: undefined } : f))
+            }}
+          />
         </Field>
 
         <div className="btn-row">

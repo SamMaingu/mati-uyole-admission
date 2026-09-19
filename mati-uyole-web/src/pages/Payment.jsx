@@ -4,11 +4,13 @@ import { t } from '../lib/i18n'
 import { formatTZS } from '../lib/format'
 import AppShell from '../components/AppShell'
 import { Button, Notice, apiErrors } from '../components/ui'
+import { useToast } from '../components/Toast'
 import api from '../lib/api'
 import { useMe } from '../lib/useMe'
 
 export default function Payment() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { refresh } = useMe()
   const [app, setApp] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -26,7 +28,9 @@ export default function Payment() {
         setApp((a) => ({ ...a, payment: res.data.payment }))
       }
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
@@ -43,8 +47,11 @@ export default function Payment() {
     try {
       const res = await api.post(`/payments/${app.id}/initiate`)
       setApp((a) => ({ ...a, payment: res.data.payment }))
+      toast.info(t('toast.paymentControl'))
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setGenerating(false)
     }
@@ -58,8 +65,11 @@ export default function Payment() {
       setApp((a) => ({ ...a, payment: res.data.payment }))
       await load()
       await refresh()
+      toast.success(t('toast.paymentPaid'))
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setMarking(false)
     }

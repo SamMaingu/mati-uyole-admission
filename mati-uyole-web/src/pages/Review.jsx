@@ -4,6 +4,7 @@ import { t } from '../lib/i18n'
 import { formatTZS } from '../lib/format'
 import AppShell from '../components/AppShell'
 import { Button, Notice, apiErrors } from '../components/ui'
+import { useToast } from '../components/Toast'
 import api from '../lib/api'
 import { useMe } from '../lib/useMe'
 
@@ -44,6 +45,7 @@ const TERMINAL = new Set([
 
 export default function Review() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { user, refresh } = useMe()
   const [app, setApp] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -66,8 +68,11 @@ export default function Review() {
       const res = await api.post(`/applications/${app.id}/submit`)
       setApp(res.data.application)
       await refresh()
+      toast.success(t('toast.submitted'))
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setSubmitting(false)
     }

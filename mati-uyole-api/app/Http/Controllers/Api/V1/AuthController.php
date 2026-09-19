@@ -22,9 +22,22 @@ class AuthController extends Controller
             'phone' => ['required', 'regex:/^0\d{9}$|^(\+?255)\d{9}$/'],
             'email' => ['nullable', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'nta_level' => ['nullable', 'integer', Rule::in([4, 5, 6])],
         ]);
 
         $phone = preg_replace('/^\+?255/', '0', $data['phone']);
+
+        if (User::where('phone', $phone)->exists()) {
+            throw ValidationException::withMessages([
+                'phone' => ['This phone number is already registered.'],
+            ]);
+        }
+
+        if (! empty($data['email']) && User::where('email', $data['email'])->exists()) {
+            throw ValidationException::withMessages([
+                'email' => ['This email address is already registered.'],
+            ]);
+        }
 
         $user = User::create([
             'first_name' => $data['first_name'],
@@ -35,6 +48,7 @@ class AuthController extends Controller
             'password' => $data['password'],
             'role' => User::ROLE_APPLICANT,
             'application_number' => $this->generateApplicationNumber(),
+            'nta_level' => $data['nta_level'] ?? null,
         ]);
 
         $sms->send($phone, 'account.created', [

@@ -23,9 +23,26 @@ export function Button({ children, variant, loading, ...props }) {
   )
 }
 
+import { CheckCircle2, AlertCircle, Info, AlertTriangle } from 'lucide-react'
+
+const NOTICE_ICONS = {
+  success: CheckCircle2,
+  error: AlertCircle,
+  info: Info,
+  warn: AlertTriangle,
+}
+
 export function Notice({ type, children }) {
   if (!children) return null
-  return <div className={`notice ${type}`}>{children}</div>
+  const Icon = NOTICE_ICONS[type] ?? Info
+  return (
+    <div className={`notice ${type}`} role={type === 'error' ? 'alert' : 'status'}>
+      <span className="notice-ic">
+        <Icon size={16} strokeWidth={2} />
+      </span>
+      <span className="notice-msg">{children}</span>
+    </div>
+  )
 }
 
 export function apiErrors(err, fallback) {

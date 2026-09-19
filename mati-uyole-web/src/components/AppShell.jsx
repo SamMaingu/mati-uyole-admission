@@ -3,12 +3,14 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Menu, UserRound, LogOut, X, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { t } from '../lib/i18n'
 import { useAuth } from '../context/AuthContext'
+import { useToast } from './Toast'
 import Stepper from './Stepper'
 import Sidebar from './Sidebar'
 import LangSwitch from './LangSwitch'
 
 export default function AppShell({ children, stepper, currentStep }) {
   const { user, logout } = useAuth()
+  const toast = useToast()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const [sideOpen, setSideOpen] = useState(false)
@@ -60,6 +62,7 @@ export default function AppShell({ children, stepper, currentStep }) {
 
   async function onLogout() {
     await logout()
+    toast.success(t('toast.loggedOut'))
     navigate('/')
   }
 

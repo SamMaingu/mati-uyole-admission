@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { t } from '../lib/i18n'
 import AppShell from '../components/AppShell'
-import { Button, Field, Notice, apiErrors } from '../components/ui'
+import { Button, Notice, apiErrors } from '../components/ui'
+import { useToast } from '../components/Toast'
 import api from '../lib/api'
 import { useMe } from '../lib/useMe'
+import { categoryLabel } from '../lib/categories'
 
 export default function Programmes() {
   const navigate = useNavigate()
-  const { refresh } = useMe()
+  const toast = useToast()
+  const { user, refresh } = useMe()
   const [app, setApp] = useState(null)
-  const [levels, setLevels] = useState([])
   const [programmes, setProgrammes] = useState([])
-  const [selectedLevel, setSelectedLevel] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
@@ -22,28 +23,26 @@ export default function Programmes() {
     setLoading(true)
     try {
       const appRes = await api.post('/applications')
-      const progRes = await api.get('/programmes/matching')
+      const level = user?.nta_level
+      const progRes = await api.get('/programmes', {
+        params: level ? { nta_level: level } : {},
+      })
       setApp(appRes.data.application)
-      setLevels(progRes.data.levels)
-      setProgrammes(progRes.data.programmes)
+      setProgrammes(progRes.data.programmes ?? [])
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    if (!user) return
     load()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  useEffect(() => {
-    if (!selectedLevel && levels.length) {
-      const initial = app?.programme?.nta_level ?? levels[0]
-      setSelectedLevel(initial)
-    }
-  }, [levels, selectedLevel, app?.programme?.nta_level])
+  }, [user?.nta_level])
 
   async function select(programmeId) {
     setSaving(true)
@@ -52,20 +51,17 @@ export default function Programmes() {
       const res = await api.post(`/applications/${app.id}/programme`, { programme_id: programmeId })
       setApp(res.data.application)
       await refresh()
+      toast.success(t('toast.programmeSelected'))
     } catch (err) {
-      setError(apiErrors(err, t('misc.error')))
+      const msg = apiErrors(err, t('misc.error'))
+      setError(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
   }
 
-  const locked = Boolean(app?.programme)
-  const activeLevel = locked ? app.programme.nta_level : selectedLevel
-
-  const courses = useMemo(
-    () => programmes.filter((p) => p.nta_level === activeLevel),
-    [programmes, activeLevel],
-  )
+  const category = user?.nta_level ?? app?.programme?.nta_level ?? null
 
   if (loading) {
     return (
@@ -88,35 +84,25 @@ export default function Programmes() {
         </Notice>
       )}
 
-      {levels.length === 0 ? (
-        <p className="muted">{t('programme.noMatch')}</p>
+      {category && (
+        <Notice type="success">
+          {t('programme.category').replace('{n}', category)} — {categoryLabel(category)}
+        </Notice>
+      )}
+
+      {programmes.length === 0 ? (
+        <p className="muted">
+          {category ? t('programme.noMatchCategory') : t('programme.noMatch')}
+        </p>
       ) : (
         <>
-          <Notice type="success">
-            {t('programme.matchedNote')} {levels.map((l) => `NTA ${l}`).join(' · ')}
-          </Notice>
+          {category && (
+            <h2 className="prog-group-title">
+              {t('programme.availableAt').replace('{n}', category)}
+            </h2>
+          )}
 
-          <Field label={t('programme.chooseLevel')}>
-            <select
-              value={activeLevel ?? ''}
-              disabled={locked}
-              onChange={(e) => setSelectedLevel(Number(e.target.value))}
-            >
-              {levels.map((l) => (
-                <option key={l} value={l}>
-                  NTA {l}
-                </option>
-              ))}
-            </select>
-          </Field>
-
-          {locked && <p className="hint warn">{t('programme.levelLocked')}</p>}
-
-          <h2 className="prog-group-title">
-            {t('programme.availableAt').replace('{n}', activeLevel ?? '')}
-          </h2>
-
-          {courses.map((p) => {
+          {programmes.map((p) => {
             const selected = app.programme_id === p.id
             return (
               <div key={p.id} className={`prog ${selected ? 'selected' : ''}`}>

@@ -6,11 +6,13 @@ import { Button, Field, Notice, apiErrors } from '../components/ui'
 import { useMe } from '../lib/useMe'
 import { usePlaces } from '../lib/usePlaces'
 import { useDraft } from '../lib/useDraft'
+import { validIndex, validAvn } from '../lib/validate'
+import { useToast } from '../components/Toast'
 import api from '../lib/api'
 
 const LEVELS = ['CSEE', 'ACSEE', 'NVA_III', 'NTA_DIPLOMA', 'OTHER']
 const NECTA_LEVELS = ['CSEE', 'ACSEE']
-const IDX = /^[SP]\d{4}\/\d{4}\/\d{4}$/
+const MAX_QUALS = 5
 
 const levelLabel = (lvl) =>
   ({ CSEE: t('academic.csee'), ACSEE: t('academic.acsee'), NVA_III: t('academic.nva3'), NTA_DIPLOMA: t('academic.diploma'), OTHER: t('academic.other') })[lvl] ?? lvl
@@ -24,6 +26,7 @@ const PRIM_INITIAL = {
 
 function QualWizard({ mode, initial, onSaved, onCancel }) {
   const editing = Boolean(initial)
+  const toast = useToast()
   const [level, setLevel] = useState(initial?.level ?? 'CSEE')
   const [step, setStep] = useState(editing ? 'manual' : 'level')
   const [indexNo, setIndexNo] = useState(initial?.index_no ?? '')
@@ -60,7 +63,9 @@ function QualWizard({ mode, initial, onSaved, onCancel }) {
       setNotMine(false)
       setStep('result')
     } catch (e) {
-      setErr(apiErrors(e, t('misc.error')))
+      const msg = apiErrors(e, t('misc.error'))
+      setErr(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -78,8 +83,11 @@ function QualWizard({ mode, initial, onSaved, onCancel }) {
         onSaved(data.academic_qualification)
         onCancel()
       }
+      toast.success(t('academic.savedMsg'))
     } catch (e) {
-      setErr(apiErrors(e, t('misc.error')))
+      const msg = apiErrors(e, t('misc.error'))
+      setErr(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -99,10 +107,38 @@ function QualWizard({ mode, initial, onSaved, onCancel }) {
   }
 
   function saveManual() {
+    const trimmedIndex = indexNo.trim()
+    const hasIdentifying =
+      Boolean(trimmedIndex && validIndex(trimmedIndex)) ||
+      manual.school_name.trim().length > 0 ||
+      manual.candidate_name.trim().length > 0 ||
+      manual.avn_number.trim().length > 0
+
+    if (trimmedIndex && !validIndex(trimmedIndex)) {
+      const msg = t('errors.indexPrimary')
+      setErr(msg)
+      toast.error(msg)
+      return
+    }
+
+    if (manual.avn_number.trim() && !validAvn(manual.avn_number.trim())) {
+      const msg = t('errors.avn')
+      setErr(msg)
+      toast.error(msg)
+      return
+    }
+
+    if (!hasIdentifying) {
+      const msg = t('academic.atLeastOneField')
+      setErr(msg)
+      toast.error(msg)
+      return
+    }
+
     const payload = {
       level,
       confirmed: initial?.confirmed ?? true,
-      index_no: indexNo.trim() || null,
+      index_no: trimmedIndex || null,
       school_name: manual.school_name,
       division: manual.division,
       points: manual.points ? Number(manual.points) : null,
@@ -146,7 +182,7 @@ function QualWizard({ mode, initial, onSaved, onCancel }) {
           </Field>
           {notMine && <p className="hint warn">{t('academic.notMineHint')}</p>}
           <div className="btn-row">
-            <Button loading={saving} disabled={!IDX.test(indexNo.trim())} onClick={retrieve} type="button">
+            <Button loading={saving} disabled={!validIndex(indexNo)} onClick={retrieve} type="button">
               {t('academic.retrieve')}
             </Button>
           </div>
@@ -316,6 +352,7 @@ function QualWizard({ mode, initial, onSaved, onCancel }) {
 
 export default function AcademicInfo() {
   const navigate = useNavigate()
+  const toast = useToast()
   const { user, refresh } = useMe()
   const profile = user?.applicant_profile
   const rec = profile?.academic_record ?? null
@@ -381,11 +418,21 @@ export default function AcademicInfo() {
   async function removeQual(q) {
     setContError('')
     setPrimError('')
+    const isLastCsee = q.level === 'CSEE' && quals.filter((x) => x.level === 'CSEE').length === 1
+    if (isLastCsee) {
+      const msg = t('academic.cseeRequired')
+      setContError(msg)
+      toast.error(msg)
+      return
+    }
     try {
       await api.delete(`/me/academic/qualifications/${q.id}`)
       onRemoved(q)
+      toast.success(t('toast.qualRemoved'))
     } catch (e) {
-      setContError(apiErrors(e, t('misc.error')))
+      const msg = apiErrors(e, t('misc.error'))
+      setContError(msg)
+      toast.error(msg)
     }
   }
 
@@ -400,14 +447,25 @@ export default function AcademicInfo() {
     try {
       await savePrimary()
       if (!quals.length) {
-        setContError(t('academic.atLeastOne'))
+        const msg = t('academic.atLeastOne')
+        setContError(msg)
+        toast.error(msg)
+        return
+      }
+      if (!quals.some((q) => q.level === 'CSEE')) {
+        const msg = t('academic.cseeRequired')
+        setContError(msg)
+        toast.error(msg)
         return
       }
       commit()
       await refresh()
+      toast.success(t('toast.saved'))
       navigate('/apply/payment')
     } catch (e) {
-      setContError(apiErrors(e, t('misc.error')))
+      const msg = apiErrors(e, t('misc.error'))
+      setContError(msg)
+      toast.error(msg)
     } finally {
       setSaving(false)
     }
@@ -499,11 +557,13 @@ export default function AcademicInfo() {
           </div>
         ))}
 
-        {!wizard && (
+        {!wizard && quals.length < MAX_QUALS && (
           <Button variant="secondary" className="acq-add" onClick={() => setWizard({ mode: 'add' })}>
             + {t('academic.addQualification')}
           </Button>
         )}
+
+        {!wizard && quals.length >= MAX_QUALS && <p className="muted">{t('academic.maxQuals')}</p>}
 
         {wizard && (
           <QualWizard

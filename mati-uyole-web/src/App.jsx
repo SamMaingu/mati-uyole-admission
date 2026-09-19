@@ -5,6 +5,7 @@ import { onChangeLang } from './lib/i18n'
 import Landing from './pages/Landing'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ProgramCategory from './pages/ProgramCategory'
 import Dashboard from './pages/Dashboard'
 import PersonalInfo from './pages/PersonalInfo'
 import NextOfKin from './pages/NextOfKin'
@@ -14,6 +15,7 @@ import Programmes from './pages/Programmes'
 import Review from './pages/Review'
 import Profile from './pages/Profile'
 import StepGate from './components/StepGate'
+import { ToastProvider } from './components/Toast'
 
 function Protected({ children }) {
   const { user, loading } = useAuth()
@@ -33,9 +35,10 @@ export default function App() {
   useEffect(() => onChangeLang(force), [])
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    <ToastProvider>
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
           <Route
             path="/"
             element={
@@ -57,6 +60,14 @@ export default function App() {
             element={
               <GuestOnly>
                 <Register />
+              </GuestOnly>
+            }
+          />
+          <Route
+            path="/apply-category"
+            element={
+              <GuestOnly>
+                <ProgramCategory />
               </GuestOnly>
             }
           />
@@ -139,8 +150,9 @@ export default function App() {
           />
 
           <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </ToastProvider>
   )
 }
